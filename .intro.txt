@@ -1,0 +1,16 @@
+
+
+Use command tmuxserver to start the screen.
+Use command serversession to attach back to the screen.
+Use command playintro to see this message again.
+
+Press C-b c to create a new window.
+Press C-b , to name the current window.
+Press C-b n to switch window.
+Press C-b d to detach from session.
+Press C-d to kill current window.
+
+Tmux exits when all windows are closed. 
+Run tmuxserver again to start it up anew.
+
+

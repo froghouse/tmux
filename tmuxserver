@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Change directory to where we want to land in the first window
+# Rename the window to something useful
+cd /home/tenebrion/Minecraft/Old\ World
+tmux new-session -d -s server 
+tmux rename-window -t0 minecraft
+
+# Change directory to where we want to land in the second window
+# Create the window with a useful name
+cd /home/steam/Steam/steamapps/common/Don\'t\ Starve\ Together\ Dedicated\ Server/bin
+tmux new-window -d -n dontstarve
+cd
