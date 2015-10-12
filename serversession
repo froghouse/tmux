@@ -1,2 +1,3 @@
 #!/bin/bash
+# Attaches to the session named server
 tmux attach -t server
