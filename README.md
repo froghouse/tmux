@@ -11,4 +11,4 @@ Set of tmux scripts for craftoverflow.com
 * `$> server start all` starts both servers.
 * `$> server attach minecraft` attaches to the minecraft window.
 * `$> server attach dontstarve` attaches to the Don't starve together window.
-* `$> server attac` attaches to the minecraft window by default.
+* `$> server attach` attaches to the minecraft window by default.
