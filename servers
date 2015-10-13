@@ -1,17 +1,26 @@
 #!/bin/bash
+SESSION="servers"
+MINECRAFT_WND="minecraft"
+DSTARVE_WND="dontstarve"
+
+MINECRAFT_DIR="/home/tenebrion/Minecraft/Old World"
+MINECRAFT_CMD="./ServerStart.sh"
+
+DSTARVE_DIR="/home/steam"
+DSTARVE_CMD="./start_dst.sh"
 
 initTmux ()
 {
     local OLD_PWD=$PWD
     # Change directory to where we want to land in the first window
     # Rename the window to something useful
-    cd /home/tenebrion/Minecraft/Old\ World
+    cd "$MINECRAFT_DIR" 
     tmux new-session -d -s $1 
     tmux rename-window -t0 $2
 
     # Change directory to where we want to land in the second window
     # Create the window with a useful name
-    cd /home/steam
+    cd "$DSTARVE_DIR"
     tmux new-window -d -n $3
     cd $OLD_PWD 
 
@@ -20,13 +29,13 @@ initTmux ()
 
 startMinecraft ()
 {
-    tmux send-keys -t servers:minecraft "./ServerStart.sh" Enter
+    tmux send-keys -t $SESSION:$MINECRAFT_WND "$MINECRAFT_CMD" Enter
 
 }
 
 startDontstarve ()
 {
-    tmux send-keys -t servers:dontstarve "./start_dst.sh" Enter
+    tmux send-keys -t $SESSION:$DSTARVE_WND "$DSTARVE_CMD" Enter
 }
 
 startServer ()
@@ -56,22 +65,23 @@ attachSession ()
 {
     case $1 in
         "minecraft")
-            tmux select-window -t servers:minecraft && tmux attach -t servers
+            tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
             ;;
 
         "dontstarve")
-            tmux select-window -t servers:dontstarve && tmux attach -t servers
+            tmux select-window -t $SESSION:$DSTARVE_WND && tmux attach -t $SESSION
             ;;
 
         *)
-            tmux select-window -t servers:minecraft && tmux attach -t servers
+            tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
+
             ;;
     esac
 }
 
 case $1 in
     "setup")
-        initTmux servers minecraft dontstarve
+        initTmux $SESSION $MINECRAFT_WND $DSTARVE_WND
         ;;
 
     "start")
