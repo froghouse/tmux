@@ -5,6 +5,10 @@ Set of tmux scripts for craftoverflow.com
 `$> git clone https://github.com/froghouse/tmux.git ~/bin`
 
 ## Usage
-* Run `$> tmuxserver` to start tmux and create the windows for the servers, and have the windows start in the respective servers root folders.
-* Run `$> serversession` to attach to the tmux session and subsequnetly the windows in the session.
-* Run `$> playintro` to see the tmux commands. `playintro` uses vim syntax, meaning C-x is equal to Ctrl + x.
+* `$> servers setup` sets the machine up for running the servers.
+* `$> servers start minecraft` starts the minecraft server.
+* `$> servers start dontstarve` starts the Don't starve together server.
+* `$> servers start all` starts both servers.
+* `$> servers attach minecraft` attaches to the minecraft window.
+* `$> servers attach dontstarve` attaches to the Don't starve together window.
+* `$> servers attach` attaches to the minecraft window by default.
