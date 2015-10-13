@@ -1,0 +1,86 @@
+#!/bin/bash
+
+initTmux ()
+{
+    local OLD_PWD=$PWD
+    # Change directory to where we want to land in the first window
+    # Rename the window to something useful
+    cd /home/tenebrion/Minecraft/Old\ World
+    tmux new-session -d -s $1 
+    tmux rename-window -t0 $2
+
+    # Change directory to where we want to land in the second window
+    # Create the window with a useful name
+    cd /home/steam
+    tmux new-window -d -n $3
+    cd $OLD_PWD 
+
+    echo "Created tmux session"
+}
+
+startMinecraft ()
+{
+    tmux send-keys -t servers:minecraft "./ServerStart.sh" Enter
+
+}
+
+startDontstarve ()
+{
+    tmux send-keys -t servers:dontstarve "./start_dst.sh" Enter
+}
+
+startServer ()
+{
+    case $1 in
+        "minecraft")
+            startMinecraft
+            ;;
+
+        "dontstarve")
+            startDontstarve
+            ;;
+
+        "all")
+            startMinecraft
+            startDontstarve
+            ;;
+        *)
+            echo "Unknown server $1"
+            exit 1
+            ;;
+
+    esac
+}
+
+attachSession ()
+{
+    case $1 in
+        "minecraft")
+            tmux select-window -t servers:minecraft && tmux attach -t servers
+            ;;
+
+        "dontstarve")
+            tmux select-window -t servers:dontstarve && tmux attach -t servers
+            ;;
+
+        *)
+            tmux select-window -t servers:minecraft && tmux attach -t servers
+            ;;
+    esac
+}
+
+case $1 in
+    "setup")
+        initTmux servers minecraft dontstarve
+        ;;
+
+    "start")
+        startServer $2
+        ;; 
+    "attach")
+        attachSession $2
+        ;;
+    *)
+        echo "Unknown action $1"
+        exit 1
+esac
