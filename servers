@@ -9,32 +9,52 @@ MINECRAFT_CMD="$MINECRAFT_DIR/ServerStart.sh"
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="$DSTARVE_DIR/start_dst.sh"
 
+checkTmuxSession() 
+{
+    tmux has-session -t $SESSION 2&> /dev/null
+    return $?
+}
+
 initTmux ()
 {
-    local OLD_PWD=$PWD
-    # Change directory to where we want to land in the first window
-    # Rename the window to something useful
-    cd "$MINECRAFT_DIR" 
-    tmux new-session -d -s $1 
-    tmux rename-window -t0 $2
+    checkTmuxSession
 
-    # Change directory to where we want to land in the second window
-    # Create the window with a useful name
-    cd "$DSTARVE_DIR"
-    tmux new-window -d -n $3
-    cd $OLD_PWD 
+    if [ $? -gt 0 ]
+    then
+        local OLD_PWD=$PWD
+        # Change directory to where we want to land in the first window
+        # Rename the window to something useful
+        cd "$MINECRAFT_DIR" 
+        tmux new-session -d -s $1 
+        tmux rename-window -t0 $2
 
-    echo "Created tmux session"
+        # Change directory to where we want to land in the second window
+        # Create the window with a useful name
+        cd "$DSTARVE_DIR"
+        tmux new-window -d -n $3
+        cd $OLD_PWD 
+
+        echo "Created tmux session"
+    else
+        echo "Tmux session already running"
+    fi
 }
 
 startMinecraft ()
 {
-    tmux send-keys -t $SESSION:$MINECRAFT_WND "$MINECRAFT_CMD" Enter
-    echo "Starting minecraft..."
+    pgrep java
+    if [ $? -eq 1 ] 
+    then
+        tmux send-keys -t $SESSION:$MINECRAFT_WND "$MINECRAFT_CMD" Enter
+        echo "Starting minecraft..."
+    else
+        echo "Minecraft is already running"
+    fi
 }
 
 startDontstarve ()
 {
+    # I don't know how to check if this is running with any certainty
     tmux send-keys -t $SESSION:$DSTARVE_WND "$DSTARVE_CMD" Enter
     echo "Starting Don't starve together..."
 }
