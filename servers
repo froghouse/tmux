@@ -84,6 +84,9 @@ case $1 in
     "attach")
         attachSession $2
         ;;
+    "help")
+        cat README.md
+        ;;
     *)
         echo "Unknown action $1"
         exit 1
