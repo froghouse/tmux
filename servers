@@ -4,7 +4,7 @@ MINECRAFT_WND="minecraft"
 DSTARVE_WND="dontstarve"
 
 MINECRAFT_DIR="/home/tenebrion/Minecraft/Old World"
-MINECRAFT_CMD="cat ./ServerStart.sh"
+MINECRAFT_CMD="./ServerStart.sh"
 
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="./start_dst.sh"
