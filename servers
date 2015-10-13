@@ -41,10 +41,25 @@ initTmux ()
     fi
 }
 
-startMinecraft ()
+checkMinecraftRunning ()
 {
     pgrep java
-    if [ $? -eq 1 ] 
+    let RETURN_STATUS=$?
+}
+
+startMinecraft ()
+{
+    checkTmuxSession
+
+    if [ $RETURN_STATUS -eq 1 ]
+    then
+        echo "No session found. Try servers setup."
+        exit 1
+    fi
+
+    checkMinecraftRunning
+
+    if [ $RETURN_STATUS -eq 1 ] 
     then
         tmux send-keys -t $SESSION:$MINECRAFT_WND "$MINECRAFT_CMD" Enter
         echo "Starting minecraft..."
@@ -53,62 +68,74 @@ startMinecraft ()
     fi
 }
 
-startDontstarve ()
+stopMinecraft ()
 {
-    # I don't know how to check if this is running with any certainty
-    tmux send-keys -t $SESSION:$DSTARVE_WND "$DSTARVE_CMD" Enter
-    echo "Starting Don't starve together..."
-}
+    checkMinecraftRunning
 
-startServer ()
-{
+    if [ $RETRUN_STATUS -eq 0 ]
+    then
+        tmux send-keys -t $SESSION:$MINECRAFT_WND "stop" Enter
+        echo "Stopping minecraft server..."
+    else
+        echo "No minecraft server running"
+    fi
+
+    startDontstarve ()
+    {
+        # I don't know how to check if this is running with any certainty
+        tmux send-keys -t $SESSION:$DSTARVE_WND "$DSTARVE_CMD" Enter
+        echo "Starting Don't starve together..."
+    }
+
+    startServer ()
+    {
+        case $1 in
+            "$MINECRAFT_WND")
+                startMinecraft
+                ;;
+            "$DSTARVE_WND")
+                startDontstarve
+                ;;
+            "all")
+                startMinecraft
+                startDontstarve
+                ;;
+            *)
+                echo "Unknown server $1"
+                exit 1
+                ;;
+        esac
+    }
+
+    attachSession ()
+    {
+        case $1 in
+            "$MINECRAFT_WND")
+                tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
+                ;;
+            "$DSTARVE_WND")
+                tmux select-window -t $SESSION:$DSTARVE_WND && tmux attach -t $SESSION
+                ;;
+            *)
+                tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
+                ;;
+        esac
+    }
+
     case $1 in
-        "$MINECRAFT_WND")
-            startMinecraft
+        "setup")
+            initTmux $SESSION $MINECRAFT_WND $DSTARVE_WND
             ;;
-        "$DSTARVE_WND")
-            startDontstarve
+        "start")
+            startServer $2
+            ;; 
+        "attach")
+            attachSession $2
             ;;
-        "all")
-            startMinecraft
-            startDontstarve
+        "help")
+            cat README.md
             ;;
         *)
-            echo "Unknown server $1"
+            echo "Unknown action $1"
             exit 1
-            ;;
     esac
-}
-
-attachSession ()
-{
-    case $1 in
-        "$MINECRAFT_WND")
-            tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
-            ;;
-        "$DSTARVE_WND")
-            tmux select-window -t $SESSION:$DSTARVE_WND && tmux attach -t $SESSION
-            ;;
-        *)
-            tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
-            ;;
-    esac
-}
-
-case $1 in
-    "setup")
-        initTmux $SESSION $MINECRAFT_WND $DSTARVE_WND
-        ;;
-    "start")
-        startServer $2
-        ;; 
-    "attach")
-        attachSession $2
-        ;;
-    "help")
-        cat README.md
-        ;;
-    *)
-        echo "Unknown action $1"
-        exit 1
-esac
