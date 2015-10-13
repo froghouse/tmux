@@ -7,7 +7,7 @@ MINECRAFT_DIR="/home/tenebrion/Minecraft/Old World"
 MINECRAFT_CMD="$MINECRAFT_DIR/ServerStart.sh"
 
 DSTARVE_DIR="/home/steam"
-DSTARVE_CMD="$MINECRAFT_DIR/start_dst.sh"
+DSTARVE_CMD="$DSTARVE_DIR/start_dst.sh"
 
 initTmux ()
 {
