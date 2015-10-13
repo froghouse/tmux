@@ -4,7 +4,7 @@ MINECRAFT_WND="minecraft"
 DSTARVE_WND="dontstarve"
 
 MINECRAFT_DIR="/home/tenebrion/Minecraft/Old World"
-MINECRAFT_CMD="./ServerStart.sh"
+MINECRAFT_CMD="cat ./ServerStart.sh"
 
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="./start_dst.sh"
@@ -30,25 +30,24 @@ initTmux ()
 startMinecraft ()
 {
     tmux send-keys -t $SESSION:$MINECRAFT_WND "$MINECRAFT_CMD" Enter
-
+    echo "Starting minecraft..."
 }
 
 startDontstarve ()
 {
     tmux send-keys -t $SESSION:$DSTARVE_WND "$DSTARVE_CMD" Enter
+    echo "Starting Don't starve together..."
 }
 
 startServer ()
 {
     case $1 in
-        "minecraft")
+        "$MINECRAFT_WND")
             startMinecraft
             ;;
-
-        "dontstarve")
+        "$DSTARVE_WND")
             startDontstarve
             ;;
-
         "all")
             startMinecraft
             startDontstarve
@@ -57,24 +56,20 @@ startServer ()
             echo "Unknown server $1"
             exit 1
             ;;
-
     esac
 }
 
 attachSession ()
 {
     case $1 in
-        "minecraft")
+        "$MINECRAFT_WND")
             tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
             ;;
-
-        "dontstarve")
+        "$DSTARVE_WND")
             tmux select-window -t $SESSION:$DSTARVE_WND && tmux attach -t $SESSION
             ;;
-
         *)
             tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
-
             ;;
     esac
 }
@@ -83,7 +78,6 @@ case $1 in
     "setup")
         initTmux $SESSION $MINECRAFT_WND $DSTARVE_WND
         ;;
-
     "start")
         startServer $2
         ;; 
