@@ -79,6 +79,7 @@ stopMinecraft ()
     else
         echo "No minecraft server running"
     fi
+}
 
     startDontstarve ()
     {
