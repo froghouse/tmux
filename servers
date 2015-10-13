@@ -9,17 +9,18 @@ MINECRAFT_CMD="$MINECRAFT_DIR/ServerStart.sh"
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="$DSTARVE_DIR/start_dst.sh"
 
+RETURN_STATUS=0
+
 checkTmuxSession() 
 {
-    tmux has-session -t $SESSION 2&> /dev/null
-    return $?
+    tmux has-session -t $SESSION > /dev/null 2>&1
+    let RETURN_STATUS=$?
 }
 
 initTmux ()
 {
     checkTmuxSession
-
-    if [ $? -gt 0 ]
+    if [ $RETURN_STATUS -eq 1 ]
     then
         local OLD_PWD=$PWD
         # Change directory to where we want to land in the first window
