@@ -13,7 +13,7 @@ MINECRAFT_CMD="$MINECRAFT_DIR/ServerStart.sh"
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="$DSTARVE_DIR/start_dst.sh"
 
-heckTmuxRunning() 
+checkTmuxRunning() 
 {
     tmux has-session -t $SESSION > /dev/null 2>&1
 
