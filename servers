@@ -1,4 +1,5 @@
 #!/bin/bash
+# Hi github
 
 SESSION="servers"
 MINECRAFT_WND="minecraft"
