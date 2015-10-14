@@ -1,7 +1,4 @@
 #!/bin/bash
-#
-## TODO: Make checking functions handle exits on error
-#
 
 SESSION="servers"
 MINECRAFT_WND="minecraft"
