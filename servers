@@ -88,13 +88,8 @@ stopMinecraft ()
 {
     checkMinecraftNotRunning
 
-    if [ $RETRUN_STATUS -eq 0 ]
-    then
-        tmux send-keys -t $SESSION:$MINECRAFT_WND "stop" Enter
-        echo "Stopping minecraft server..."
-    else
-        echo "No minecraft server running"
-    fi
+    tmux send-keys -t $SESSION:$MINECRAFT_WND "stop" Enter
+    echo "Stopping minecraft server..."
 }
 
 startDontstarve ()
