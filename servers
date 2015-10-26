@@ -2,14 +2,14 @@
 # Hi github
 
 SESSION="servers"
-MINECRAFT_WND="minecraft"
-DSTARVE_WND="dontstarve"
 
 MINECRAFT_DIR="/home/tenebrion/Minecraft/Old World"
 MINECRAFT_CMD="$MINECRAFT_DIR/ServerStart.sh"
+MINECRAFT_WND="minecraft"
 
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="$DSTARVE_DIR/start_dst.sh"
+DSTARVE_WND="dontstarve"
 
 checkTmuxRunning()
 {
