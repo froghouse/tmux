@@ -4,6 +4,9 @@ Set of tmux scripts for craftoverflow.com
 ## Installation
 `$> git clone https://github.com/froghouse/tmux.git ~/bin`
 
+## Update
+`$> cd ~/bin && git pull`
+
 ## Usage
 * `$> servers setup` sets the machine up for running the servers.
 * `$> servers start minecraft` starts the minecraft server.
