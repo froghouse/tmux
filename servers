@@ -2,16 +2,16 @@
 # Hi github
 
 SESSION="servers"
-MINECRAFT_WND="minecraft"
-DSTARVE_WND="dontstarve"
 
 MINECRAFT_DIR="/home/tenebrion/Minecraft/Old World"
 MINECRAFT_CMD="$MINECRAFT_DIR/ServerStart.sh"
+MINECRAFT_WND="minecraft"
 
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="$DSTARVE_DIR/start_dst.sh"
+DSTARVE_WND="dontstarve"
 
-checkTmuxRunning() 
+checkTmuxRunning()
 {
     tmux has-session -t $SESSION > /dev/null 2>&1
 
@@ -22,7 +22,7 @@ checkTmuxRunning()
     fi
 }
 
-checkTmuxNotRunning() 
+checkTmuxNotRunning()
 {
     tmux has-session -t $SESSION > /dev/null 2>&1
 
@@ -38,8 +38,8 @@ initTmux ()
     local OLD_PWD=$PWD
     # Change directory to where we want to land in the first window
     # Rename the window to something useful
-    cd "$MINECRAFT_DIR" 
-    tmux new-session -d -s $SESSION 
+    cd "$MINECRAFT_DIR"
+    tmux new-session -d -s $SESSION
     tmux rename-window -t $SESSION:0 $MINECRAFT_WND
 
     # Change directory to where we want to land in the second window
@@ -47,7 +47,7 @@ initTmux ()
     cd "$DSTARVE_DIR"
     tmux new-window -da
     tmux rename-window -t $SESSION:1 $DSTARVE_WND
-    cd $OLD_PWD 
+    cd $OLD_PWD
 
     echo "Created tmux session"
 }
@@ -135,12 +135,12 @@ attachSession ()
 case $1 in
     "setup")
         checkTmuxRunning
-        initTmux 
+        initTmux
         ;;
     "start")
         checkTmuxNotRunning
         startServer $2
-        ;; 
+        ;;
     "attach")
         checkTmuxNotRunning
         attachSession $2
