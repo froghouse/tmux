@@ -146,7 +146,7 @@ case $1 in
         attachSession $2
         ;;
     "help")
-        cat "~/bin/README.md"
+        cat "${HOME}/bin/README.md"
         ;;
     *)
         echo "Unknown action $1"
