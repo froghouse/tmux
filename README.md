@@ -21,7 +21,7 @@ A Bash script for managing multiple game servers (Minecraft and Don't Starve Tog
 
 1. Clone this repository or download the script:
    ```bash
-   git clone https://github.com/yourusername/game-server-manager.git
+   git clone https://github.com/froghouse/tmux.git
    ```
 
 2. Make the script executable:
