@@ -99,7 +99,7 @@ Once attached to a tmux session:
 
 ### Common Issues
 
-- **"Tmux session not running"**: Run `./server-script.sh setup` to create the tmux session.
+- **"Tmux session not running"**: Run `./servers setup` to create the tmux session.
 - **"Cannot change to directory"**: Check if the server paths are configured correctly.
 - **Server status shows "unknown"**: Configure the correct process name for the server.
 
