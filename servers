@@ -1,104 +1,146 @@
 #!/bin/bash
-# Hi github
+# Game Server Management Script
+# Manages Minecraft and Don't Starve Together servers within tmux sessions
 
+# Configuration
 SESSION="servers"
 
 MINECRAFT_DIR="/home/tenebrion/Minecraft/Old World"
 MINECRAFT_CMD="$MINECRAFT_DIR/ServerStart.sh"
 MINECRAFT_WND="minecraft"
+MINECRAFT_PROCESS="java"
 
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="$DSTARVE_DIR/start_dst.sh"
 DSTARVE_WND="dontstarve"
+# Add process name for Don't Starve if known (e.g., "dontstarve_dedicated_server")
+DSTARVE_PROCESS=""
 
-checkTmuxRunning()
-{
-    tmux has-session -t $SESSION > /dev/null 2>&1
+# Color definitions for better readability
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
 
-    if [ $? -eq 0 ]
-    then
-        echo "Tmux session already running"
-        exit 1
-    fi
+# Display error message and exit
+error() {
+    echo -e "${RED}ERROR:${NC} $1" >&2
+    exit 1
 }
 
-checkTmuxNotRunning()
-{
-    tmux has-session -t $SESSION > /dev/null 2>&1
-
-    if [ $? -eq 1 ]
-    then
-        echo "Tmux session not running. Try servers setup."
-        exit 1
-    fi
+# Display success message
+success() {
+    echo -e "${GREEN}SUCCESS:${NC} $1"
 }
 
-initTmux ()
-{
+# Display info message
+info() {
+    echo -e "${YELLOW}INFO:${NC} $1"
+}
+
+# Check if the tmux session is running
+isTmuxRunning() {
+    tmux has-session -t $SESSION > /dev/null 2>&1
+    return $?
+}
+
+# Initialize tmux session
+initTmux() {
     local OLD_PWD=$PWD
-    # Change directory to where we want to land in the first window
-    # Rename the window to something useful
-    cd "$MINECRAFT_DIR"
+    
+    # First window for Minecraft
+    cd "$MINECRAFT_DIR" || error "Cannot change to Minecraft directory: $MINECRAFT_DIR"
     tmux new-session -d -s $SESSION
     tmux rename-window -t $SESSION:0 $MINECRAFT_WND
 
-    # Change directory to where we want to land in the second window
-    # Create the window with a useful name
-    cd "$DSTARVE_DIR"
-    tmux new-window -da
+    # Second window for Don't Starve Together
+    cd "$DSTARVE_DIR" || error "Cannot change to Don't Starve directory: $DSTARVE_DIR"
+    tmux new-window -t $SESSION
     tmux rename-window -t $SESSION:1 $DSTARVE_WND
-    cd $OLD_PWD
-
-    echo "Created tmux session"
+    
+    # Return to original directory
+    cd "$OLD_PWD" || error "Cannot change back to original directory: $OLD_PWD"
+    
+    success "Created tmux session with windows for $MINECRAFT_WND and $DSTARVE_WND"
 }
 
-checkMinecraftRunning ()
-{
-    pgrep java > /dev/null 2>&1
-
-    if [ $? -eq 0 ]
-    then
-        echo "Minecraft is running"
-        exit 1
+# Check if a process is running
+isProcessRunning() {
+    local process_name=$1
+    
+    if [ -z "$process_name" ]; then
+        return 1
     fi
+    
+    pgrep "$process_name" > /dev/null 2>&1
+    return $?
 }
 
-checkMinecraftNotRunning()
-{
-    pgrep java > /dev/null 2>&1
-
-    if [ $? -eq 1 ]
-    then
-        echo "Minecraft is not running"
-        exit 1
+# Start Minecraft server
+startMinecraft() {
+    if isProcessRunning "$MINECRAFT_PROCESS"; then
+        info "Minecraft is already running"
+        return 0
     fi
+
+    tmux send-keys -t $SESSION:$MINECRAFT_WND "cd \"$MINECRAFT_DIR\" && $MINECRAFT_CMD" Enter
+    success "Starting Minecraft server..."
 }
 
-startMinecraft ()
-{
-    checkMinecraftRunning
-
-    tmux send-keys -t $SESSION:$MINECRAFT_WND "$MINECRAFT_CMD" Enter
-    echo "Starting minecraft..."
-}
-
-stopMinecraft ()
-{
-    checkMinecraftNotRunning
+# Stop Minecraft server
+stopMinecraft() {
+    if ! isProcessRunning "$MINECRAFT_PROCESS"; then
+        info "Minecraft is not running"
+        return 0
+    fi
 
     tmux send-keys -t $SESSION:$MINECRAFT_WND "stop" Enter
-    echo "Stopping minecraft server..."
+    success "Stopping Minecraft server..."
+    
+    # Wait for server to stop (optional)
+    info "Waiting for Minecraft server to stop..."
+    for i in {1..30}; do
+        if ! isProcessRunning "$MINECRAFT_PROCESS"; then
+            success "Minecraft server stopped"
+            return 0
+        fi
+        sleep 1
+    done
+    
+    info "Minecraft server is taking longer than expected to stop"
 }
 
-startDontstarve ()
-{
-    # I don't know how to check if this is running with any certainty
-    tmux send-keys -t $SESSION:$DSTARVE_WND "$DSTARVE_CMD" Enter
-    echo "Starting Don't starve together..."
+# Start Don't Starve Together server
+startDontstarve() {
+    if [ -n "$DSTARVE_PROCESS" ] && isProcessRunning "$DSTARVE_PROCESS"; then
+        info "Don't Starve Together is already running"
+        return 0
+    fi
+
+    tmux send-keys -t $SESSION:$DSTARVE_WND "cd \"$DSTARVE_DIR\" && $DSTARVE_CMD" Enter
+    success "Starting Don't Starve Together server..."
 }
 
-startServer ()
-{
+# Stop Don't Starve Together server (if possible)
+stopDontstarve() {
+    if [ -z "$DSTARVE_PROCESS" ]; then
+        info "Don't know how to check if Don't Starve is running"
+        tmux send-keys -t $SESSION:$DSTARVE_WND "^C" Enter
+        info "Sent Ctrl+C to Don't Starve window"
+        return 0
+    fi
+    
+    if ! isProcessRunning "$DSTARVE_PROCESS"; then
+        info "Don't Starve Together is not running"
+        return 0
+    fi
+    
+    tmux send-keys -t $SESSION:$DSTARVE_WND "^C" Enter
+    success "Stopping Don't Starve Together server..."
+}
+
+# Start a specific server or all servers
+startServer() {
     case $1 in
         "$MINECRAFT_WND")
             startMinecraft
@@ -111,44 +153,138 @@ startServer ()
             startDontstarve
             ;;
         *)
-            echo "Unknown server $1"
-            exit 1
+            error "Unknown server: $1. Available servers: $MINECRAFT_WND, $DSTARVE_WND, all"
             ;;
     esac
 }
 
-attachSession ()
-{
+# Stop a specific server or all servers
+stopServer() {
     case $1 in
         "$MINECRAFT_WND")
-            tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
+            stopMinecraft
             ;;
         "$DSTARVE_WND")
-            tmux select-window -t $SESSION:$DSTARVE_WND && tmux attach -t $SESSION
+            stopDontstarve
+            ;;
+        "all")
+            stopMinecraft
+            stopDontstarve
             ;;
         *)
-            tmux select-window -t $SESSION:$MINECRAFT_WND && tmux attach -t $SESSION
+            error "Unknown server: $1. Available servers: $MINECRAFT_WND, $DSTARVE_WND, all"
             ;;
     esac
 }
 
+# Attach to tmux session with specific window
+attachSession() {
+    local window=""
+    case $1 in
+        "$MINECRAFT_WND")
+            window="$MINECRAFT_WND"
+            ;;
+        "$DSTARVE_WND")
+            window="$DSTARVE_WND"
+            ;;
+        *)
+            window="$MINECRAFT_WND" # Default
+            ;;
+    esac
+    
+    tmux select-window -t $SESSION:$window 2>/dev/null && tmux attach -t $SESSION
+}
+
+# Show status of servers
+showStatus() {
+    info "Server Status:"
+    
+    if isTmuxRunning; then
+        echo "✓ Tmux session '$SESSION' is running"
+    else
+        echo "✗ Tmux session '$SESSION' is not running"
+        return
+    fi
+    
+    if isProcessRunning "$MINECRAFT_PROCESS"; then
+        echo "✓ Minecraft server is running"
+    else
+        echo "✗ Minecraft server is not running"
+    fi
+    
+    if [ -n "$DSTARVE_PROCESS" ]; then
+        if isProcessRunning "$DSTARVE_PROCESS"; then
+            echo "✓ Don't Starve Together server is running"
+        else
+            echo "✗ Don't Starve Together server is not running"
+        fi
+    else
+        echo "? Don't Starve Together server status unknown (process name not configured)"
+    fi
+}
+
+# Display help message
+showHelp() {
+    if [ -f "${HOME}/bin/README.md" ]; then
+        cat "${HOME}/bin/README.md"
+    else
+        cat << EOF
+Game Server Management Script
+
+Usage: $0 COMMAND [OPTIONS]
+
+Commands:
+  setup                  Initialize tmux session with server windows
+  start [server]         Start server(s). Options: $MINECRAFT_WND, $DSTARVE_WND, all
+  stop [server]          Stop server(s). Options: $MINECRAFT_WND, $DSTARVE_WND, all
+  attach [server]        Attach to tmux session. Options: $MINECRAFT_WND, $DSTARVE_WND
+  status                 Show status of tmux session and servers
+  help                   Show this help message
+
+Examples:
+  $0 setup               # Create tmux session with server windows
+  $0 start all           # Start both Minecraft and Don't Starve Together
+  $0 stop minecraft      # Stop only the Minecraft server
+  $0 attach dontstarve   # Attach to the Don't Starve Together window
+EOF
+    fi
+}
+
+# Main script execution
 case $1 in
     "setup")
-        checkTmuxRunning
+        if isTmuxRunning; then
+            error "Tmux session '$SESSION' already running. Attach with: $0 attach"
+        fi
         initTmux
         ;;
     "start")
-        checkTmuxNotRunning
-        startServer $2
+        if ! isTmuxRunning; then
+            error "Tmux session '$SESSION' not running. Run '$0 setup' first."
+        fi
+        startServer "${2:-all}"
+        ;;
+    "stop")
+        if ! isTmuxRunning; then
+            error "Tmux session '$SESSION' not running. Nothing to stop."
+        fi
+        stopServer "${2:-all}"
         ;;
     "attach")
-        checkTmuxNotRunning
-        attachSession $2
+        if ! isTmuxRunning; then
+            error "Tmux session '$SESSION' not running. Run '$0 setup' first."
+        fi
+        attachSession "$2"
         ;;
-    "help")
-        cat "${HOME}/bin/README.md"
+    "status")
+        showStatus
+        ;;
+    "help"|"--help"|"-h")
+        showHelp
         ;;
     *)
-        echo "Unknown action $1"
-        exit 1
+        error "Unknown action: $1. Run '$0 help' for usage information."
+        ;;
 esac
+
+exit 0
