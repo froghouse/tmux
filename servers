@@ -13,7 +13,7 @@ MINECRAFT_PROCESS="java"
 DSTARVE_DIR="/home/steam"
 DSTARVE_CMD="$DSTARVE_DIR/start_dst.sh"
 DSTARVE_WND="dontstarve"
-# Add process name for Don't Starve if known (e.g., "dontstarve_dedicated_server")
+# Add process name for Don't Starve here
 DSTARVE_PROCESS=""
 
 # Color definitions for better readability
